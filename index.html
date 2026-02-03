@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MyMbudGet</title>
+  <meta name="theme-color" content="#1d4ed8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="stylesheet" href="./styles.css?v=3.5.1-gh-nosw-tabs-importcsv-bio" />
+</head>
+<body>
+  <div class="tabs">
+    <div class="tabbar container">
+      <button class="tab active" id="tab-home" data-tab="home">Accueil</button>
+      <button class="tab" id="tab-charts" data-tab="charts">Graphiques</button>
+      <button class="tab" id="tab-manage" data-tab="manage">Récurrences & Budgets</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="h1">MyMbudGet</div>
+      <div class="month-nav">
+        <button id="prev" class="btn secondary">◀︎</button>
+        <span id="monthLabel" class="badge">Mois</span>
+        <button id="next" class="btn secondary">▶︎</button>
+      </div>
+    </div>
+
+    <!-- Page 1: Accueil -->
+    <section id="page-home" class="page active">
+      <div class="grid">
+        <div class="card"><h3>Revenus</h3><div id="income" class="amount income">0 €</div></div>
+        <div class="card"><h3>Dépenses</h3><div id="expense" class="amount expense">0 €</div></div>
+        <div class="card"><h3>Solde</h3><div id="balance" class="amount balance">0 €</div></div>
+      </div>
+      <div class="card">
+        <h3>Ajouter une transaction</h3>
+        <form id="form" class="row">
+          <input id="label" class="input col" placeholder="Libellé (ex: Courses, Loyer…)" required />
+          <input id="amount" class="input col" placeholder="Montant (ex: 23,50)" inputmode="decimal" required />
+          <label class="badge"><input id="isIncome" type="checkbox" /> Recette</label>
+          <div class="dropdown col">
+            <div id="catDDBtn" class="dropdown-btn"><span>Catégorie: <strong id="catDDLabel">Autres</strong></span><span>▾</span></div>
+            <div id="catDDList" class="dropdown-list" style="display:none"></div>
+            <input id="category" type="hidden" value="autres" />
+          </div>
+          <input id="date" type="date" class="input col" />
+          <textarea id="notes" class="input col" rows="2" placeholder="Notes (optionnel)"></textarea>
+          <div class="actions"><button class="btn" type="submit">Enregistrer</button></div>
+        </form>
+      </div>
+      <div class="card list"><h3>Historique des transactions</h3><div id="list"></div></div>
+    </section>
+
+    <!-- Page 2: Graphiques -->
+    <section id="page-charts" class="page">
+      <div class="card"><h3>Répartition par catégorie (barres)</h3><canvas id="chart" class="chart"></canvas></div>
+      <div class="card"><h3>Évolution du solde (ligne)</h3><canvas id="balanceLine" class="chart" style="margin-top:12px"></canvas></div>
+      <div class="card"><h3>Donut catégories (mois)</h3><canvas id="donutCat" class="chart" style="margin-top:12px"></canvas></div>
+    </section>
+
+    <!-- Page 3: Récurrences & Budgets -->
+    <section id="page-manage" class="page">
+      <div class="section">
+        <div class="card">
+          <h3>Transactions récurrentes</h3>
+          <form id="recForm" class="row">
+            <input id="recLabel" class="input col" placeholder="Libellé" required />
+            <input id="recAmount" class="input col" placeholder="Montant" inputmode="decimal" required />
+            <label class="badge"><input id="recIsIncome" type="checkbox" /> Recette</label>
+            <select id="recCategory" class="input col"></select>
+            <input id="recStart" type="date" class="input col" />
+            <select id="recFreq" class="input col"><option value="monthly">Mensuel</option><option value="weekly">Hebdomadaire</option><option value="daily">Quotidien</option></select>
+            <select id="recEndType" class="input col"><option value="none">Sans fin</option><option value="until">Jusqu'à la date</option><option value="count">Nombre d'occurrences</option></select>
+            <input id="recEndDate" type="date" class="input col hidden" placeholder="Date de fin" />
+            <input id="recCount" type="number" class="input col hidden" placeholder="Nombre" min="1" />
+            <div class="actions"><button class="btn" type="submit">Ajouter récurrence</button></div>
+          </form>
+          <div id="recList"></div>
+
+          <!-- Import CSV avec mode synchronisation -->
+          <div class="actions" style="margin-top:10px">
+            <label class="badge"><input id="importSyncMode" type="checkbox" checked /> Mode synchronisation (ajouter/mettre à jour/supprimer)</label>
+            <input id="importRecCSV" type="file" accept=".csv" style="display:none">
+            <button id="importRecCSVBtn" class="btn">Importer récurrences CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section"><div class="card"><h3>Budgets par catégorie</h3><div id="budgetsList" class="row"></div><div class="actions"><button class="btn" id="saveBudgets">Enregistrer les budgets</button></div></div></div>
+      <div class="card" id="budgetAlerts" style="display:none"><h3>Alertes budgets</h3><div id="alerts"></div></div>
+
+      <!-- Bloc biométrie -->
+      <div class="section">
+        <div class="card">
+          <h3>Verrouillage biométrique</h3>
+          <div class="row">
+            <button id="enableLock" class="btn">Activer le verrouillage (Face ID)</button>
+            <button id="disableLock" class="btn secondary">Désactiver le verrouillage</button>
+            <button id="unlockNow" class="btn">Déverrouiller</button>
+          </div>
+          <div class="small" style="margin-top:8px">HTTPS requis (GitHub Pages ✔). iPhone/Face ID, Touch ID, Windows Hello ou équivalent pris en charge.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Overlay de verrouillage injecté par JS (lockOverlay) -->
+
+  <script src="./app.js?v=3.5.1-gh-nosw-tabs-importcsv-bio"></script>
+</body>
+</html>
